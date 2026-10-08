@@ -1,0 +1,33 @@
+# Secretos / variables de entorno
+.env
+.env.*
+!.env.example
+
+# Config generada por Airflow (contiene secretos)
+config/airflow.cfg
+
+# Logs de Airflow
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Airflow local
+airflow.db
+airflow-webserver.pid
+standalone_admin_password.txt
+
+# Overrides locales de Docker
+docker-compose.override.yaml
+
+# Editor / SO
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
