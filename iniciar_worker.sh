@@ -43,7 +43,6 @@ RABBITMQ_DEFAULT_PASS="${RABBITMQ_DEFAULT_PASS:-rabbit}"
 
 export AIRFLOW_HOME="$PWD"
 export AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-export AIRFLOW__CORE__AUTH_MANAGER=airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
 export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN="postgresql+psycopg2://airflow:airflow@${MASTER_IP}:5432/airflow"
 export AIRFLOW__CELERY__BROKER_URL="amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@${MASTER_IP}:5672//"
 export AIRFLOW__CELERY__RESULT_BACKEND="db+postgresql://airflow:airflow@${MASTER_IP}:5432/airflow"
