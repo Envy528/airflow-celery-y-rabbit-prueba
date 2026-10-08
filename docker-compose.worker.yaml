@@ -1,22 +1,26 @@
-# Airflow CeleryExecutor — NODO WORKER REMOTO ("esclavo").
-# Úsalo en cada computador extra que quieras sumar al clúster.
+# Airflow CeleryExecutor — NODO WORKER con Docker (Windows o Linux).
+# Úsalo en cada computador con Docker que quieras sumar al clúster.
 #
 # Requisitos en esta máquina:
 #   - Carpeta ./dags con EXACTAMENTE los mismos DAGs que el maestro (sincronízala con git).
-#   - Un .env con, como mínimo:
-#       MASTER_IP=192.168.1.50            # IP del nodo maestro en la red
-#       AIRFLOW_FERNET_KEY=...            # la misma del maestro
-#       AIRFLOW_JWT_SECRET=...            # la misma del maestro
-#       RABBITMQ_DEFAULT_USER=rabbit      # las mismas del maestro
-#       RABBITMQ_DEFAULT_PASS=rabbit
-#       WORKER_QUEUES=default             # opcional: colas que atiende este worker
+#   - Un .env (copia de .env.example) con, como mínimo:
+#       MASTER_IP=...      IP privada del maestro
+#       WORKER_IP=...      IP privada de ESTA máquina (para que el maestro lea sus logs)
+#       AIRFLOW_FERNET_KEY / AIRFLOW_JWT_SECRET   iguales a los del maestro
 #
-# Levantar:   docker compose -f docker-compose.worker.yaml up -d
+# En Windows:  .\iniciar_worker.ps1
+# A mano:      docker compose -f docker-compose.worker.yaml up -d
 ---
+# Nombre de proyecto propio, para no mezclarse con el compose del maestro
+name: airflow-worker
+
 services:
   airflow-worker:
     image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.5}
     command: celery worker -q ${WORKER_QUEUES:-default}
+    # El contenedor se llama como la IP de esta máquina: así el worker se
+    # anuncia con ella y el maestro sabe dónde pedirle los logs.
+    hostname: ${WORKER_IP:?Define WORKER_IP en .env (IP privada de esta maquina)}
     env_file:
       - ${ENV_FILE_PATH:-.env}
     environment:
@@ -30,15 +34,13 @@ services:
       # Secretos compartidos con el maestro
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-}
       AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET:-cambia-esto-por-un-secreto-largo}
-      # Para que el maestro pueda leer los logs de este worker (puerto 8793),
-      # el worker se anuncia con la IP real de esta máquina.
-      AIRFLOW__CORE__HOSTNAME_CALLABLE: airflow.utils.net.get_host_ip_address
+      # Usa el hostname del contenedor (= WORKER_IP) tal cual, sin búsquedas DNS
+      AIRFLOW__CORE__HOSTNAME_CALLABLE: socket.gethostname
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
       DUMB_INIT_SETSID: "0"
-    # En Linux, la red del host hace que la IP anunciada sea la de la máquina
-    # y que el puerto de logs 8793 quede accesible desde el maestro.
-    network_mode: host
+    ports:
+      - "8793:8793"   # Servidor de logs del worker (el maestro los lee por aquí)
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
       - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
