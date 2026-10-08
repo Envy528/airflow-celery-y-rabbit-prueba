@@ -51,7 +51,7 @@ export AIRFLOW__CORE__EXECUTION_API_SERVER_URL="http://${MASTER_IP}:8080/executi
 export AIRFLOW__CORE__FERNET_KEY="${AIRFLOW_FERNET_KEY}"
 export AIRFLOW__API_AUTH__JWT_SECRET="${AIRFLOW_JWT_SECRET}"
 export AIRFLOW__CORE__DAGS_FOLDER="$PWD/dags"
-export AIRFLOW__CORE__LOAD_EXAMPLES=true
+export AIRFLOW__CORE__LOAD_EXAMPLES=false
 # Se anuncia con su IP real para que el maestro pueda leer sus logs (puerto 8793)
 export AIRFLOW__CORE__HOSTNAME_CALLABLE=airflow.utils.net.get_host_ip_address
 

@@ -33,7 +33,7 @@ services:
       # Para que el maestro pueda leer los logs de este worker (puerto 8793),
       # el worker se anuncia con la IP real de esta máquina.
       AIRFLOW__CORE__HOSTNAME_CALLABLE: airflow.utils.net.get_host_ip_address
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
       DUMB_INIT_SETSID: "0"
     # En Linux, la red del host hace que la IP anunciada sea la de la máquina
