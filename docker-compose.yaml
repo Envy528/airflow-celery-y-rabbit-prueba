@@ -65,7 +65,9 @@ services:
       POSTGRES_DB: airflow
       PGDATA: /var/lib/postgresql/data
     ports:
-      - "5432:5432"     # Expuesto para que los workers remotos lleguen a la metadata DB
+      # Puerto en el PC: 5433 (no 5432) para no chocar con un PostgreSQL instalado en el PC.
+      # Dentro de Docker sigue siendo postgres:5432.
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:

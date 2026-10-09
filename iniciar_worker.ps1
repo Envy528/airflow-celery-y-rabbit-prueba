@@ -55,7 +55,8 @@ if ($LASTEXITCODE -ne 0) {
 # 3. Probar conexion con el maestro
 Write-Host ">> Probando conexion con el maestro $master ..." -ForegroundColor Cyan
 $ok = $true
-foreach ($puerto in 5432, 5672, 8080) {
+$pgPort = if ($envVars["POSTGRES_PORT"]) { [int]$envVars["POSTGRES_PORT"] } else { 5433 }
+foreach ($puerto in $pgPort, 5672, 8080) {
     $r = Test-NetConnection -ComputerName $master -Port $puerto -WarningAction SilentlyContinue
     if ($r.TcpTestSucceeded) {
         Write-Host "   puerto $puerto OK" -ForegroundColor Green

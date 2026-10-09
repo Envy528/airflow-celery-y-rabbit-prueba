@@ -27,9 +27,9 @@ services:
       AIRFLOW__CORE__EXECUTOR: CeleryExecutor
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       # Todo apunta al maestro por su IP
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@${MASTER_IP:?Define MASTER_IP en .env}:5432/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@${MASTER_IP:?Define MASTER_IP en .env}:${POSTGRES_PORT:-5433}/airflow
       AIRFLOW__CELERY__BROKER_URL: amqp://${RABBITMQ_DEFAULT_USER:-rabbit}:${RABBITMQ_DEFAULT_PASS:-rabbit}@${MASTER_IP}:5672//
-      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@${MASTER_IP}:5432/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@${MASTER_IP}:${POSTGRES_PORT:-5433}/airflow
       AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://${MASTER_IP}:8080/execution/
       # Secretos compartidos con el maestro
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-}

@@ -41,7 +41,7 @@ Cada worker necesita llegar al maestro por estos puertos:
 
 | Puerto | Servicio | Quién lo usa |
 |---|---|---|
-| `5432` | PostgreSQL | Workers → maestro |
+| `5433` | PostgreSQL (`POSTGRES_PORT`; dentro de Docker es 5432) | Workers → maestro |
 | `5672` | RabbitMQ (AMQP) | Workers → maestro |
 | `8080` | API / UI de Airflow | Workers → maestro, y tu navegador |
 | `5555` | Flower (monitoreo de Celery) | Tu navegador |
@@ -97,6 +97,7 @@ Copy-Item .env.example .env        # Windows (PowerShell)
 | `AIRFLOW_FERNET_KEY` | **Todas (igual)** | Clave para cifrar conexiones y contraseñas de Airflow |
 | `AIRFLOW_JWT_SECRET` | **Todas (igual)** | Secreto con el que se firman los tokens entre workers y API |
 | `RABBITMQ_DEFAULT_USER` / `_PASS` | **Todas (igual)** | Credenciales de RabbitMQ (por defecto `rabbit` / `rabbit`) |
+| `POSTGRES_PORT` | **Todas (igual)** | Puerto del Postgres del maestro en la red (por defecto `5433`) |
 | `AIRFLOW_UID` | Maestro / workers con Docker | `50000` en Windows; en Linux pon el resultado de `id -u` |
 | `AIRFLOW__DAG_PROCESSOR__BUNDLE_REFRESH_CHECK_INTERVAL` | Maestro | Cada cuántos **segundos** busca cambios en los DAGs (`60` = 1 minuto) |
 | `_AIRFLOW_WWW_USER_USERNAME` / `_PASSWORD` | Maestro | Usuario de la UI (por defecto `airflow` / `airflow`) |
@@ -173,7 +174,7 @@ En todos los casos: clona el repo, crea el `.env` con **las mismas claves** que 
    .\iniciar_worker.ps1 -Logs
    ```
 
-   El script revisa el `.env`, prueba la conexión con el maestro (puertos 5432, 5672 y 8080) y levanta el worker.
+   El script revisa el `.env`, prueba la conexión con el maestro (puertos 5433, 5672 y 8080) y levanta el worker.
 
    - Solo levantarlo, sin ver logs: `.\iniciar_worker.ps1`
    - Detenerlo: `.\iniciar_worker.ps1 -Detener`
@@ -269,7 +270,7 @@ Un worker puede atender varias colas a la vez: `WORKER_QUEUES=default,pc2`.
 **Windows** (PowerShell como administrador):
 
 ```powershell
-New-NetFirewallRule -DisplayName "Airflow maestro" -Direction Inbound -Protocol TCP -LocalPort 5432,5672,8080,5555,15672 -Action Allow -RemoteAddress LocalSubnet -Profile Private
+New-NetFirewallRule -DisplayName "Airflow maestro" -Direction Inbound -Protocol TCP -LocalPort 5433,5672,8080,5555,15672 -Action Allow -RemoteAddress LocalSubnet -Profile Private
 ```
 
 La regla solo aplica en redes marcadas como **Private**. Revísalo con `Get-NetConnectionProfile`, y si sale `Public`:
@@ -281,7 +282,7 @@ Set-NetConnectionProfile -InterfaceAlias "Wi-Fi" -NetworkCategory Private
 **Linux:** con Docker, los puertos publicados suelen quedar accesibles aunque `ufw` esté activo. Si no, abre los puertos así (ajusta la subred):
 
 ```bash
-sudo ufw allow from 192.168.1.0/24 to any port 5432,5672,8080,5555,15672 proto tcp
+sudo ufw allow from 192.168.1.0/24 to any port 5433,5672,8080,5555,15672 proto tcp
 ```
 
 **Deshacer:**
@@ -303,7 +304,7 @@ Test-NetConnection IP_DEL_MAESTRO -Port 5672                  # Windows: debe da
 nc -zv -w 5 IP_DEL_MAESTRO 5672                               # Linux: debe decir "succeeded"
 ```
 
-Repite con `5432` y `8080`.
+Repite con `5433` y `8080`.
 
 ### Redes que no dejan que los equipos se vean
 
@@ -321,7 +322,7 @@ Eso no se arregla desde los PCs. Las alternativas son:
    - Al conectarte al hotspot, Windows marca la red como `Public`: cámbiala a `Private` en cada PC.
    - Las IPs cambian, así que actualiza `MASTER_IP` y `WORKER_IP`.
 2. **Túnel SSH a través de un servidor en la nube** (por ejemplo, una EC2). Cada PC solo abre conexiones de salida hacia el servidor; funciona en cualquier red.
-3. **Pedir a soporte de la red** que permita el tráfico entre las IPs en los puertos 5432, 5672 y 8080.
+3. **Pedir a soporte de la red** que permita el tráfico entre las IPs en los puertos 5433, 5672 y 8080.
 
 ---
 
@@ -333,6 +334,7 @@ Eso no se arregla desde los PCs. Las alternativas son:
 | `Connection timed out` hacia `MASTER_IP` | Firewall, IP equivocada o red aislada | Ver [Red y firewall](#red-y-firewall) |
 | `Connection refused` | El maestro está apagado o no está *healthy* | `docker compose ps` en el maestro |
 | El worker no aparece, aunque hay conexión | Claves distintas entre máquinas | `AIRFLOW_FERNET_KEY` y `AIRFLOW_JWT_SECRET` deben ser idénticas |
+| `UnicodeDecodeError: 'utf-8' codec can't decode byte 0xed` al conectar | El worker llegó a **otro** PostgreSQL instalado en el maestro (mensajes en español), no al de Docker | Usa `POSTGRES_PORT=5433` (por defecto) en el `.env` de todas las máquinas |
 | Una tarea falla con error de import | DAGs distintos entre máquinas | `git pull` en todas |
 | La UI no muestra el log de una tarea de otro PC | El maestro no llega al puerto 8793 del worker | Abre el 8793 en el worker. Los logs igual quedan en su carpeta `logs/` |
 | `Permission denied` al ejecutar el `.sh` | Falta permiso de ejecución | `chmod +x iniciar_worker.sh limpiar.sh` |

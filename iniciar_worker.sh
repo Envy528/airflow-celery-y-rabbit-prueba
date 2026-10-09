@@ -44,12 +44,13 @@ set -a; source .env; set +a
 : "${AIRFLOW_JWT_SECRET:?Define AIRFLOW_JWT_SECRET en .env}"
 RABBITMQ_DEFAULT_USER="${RABBITMQ_DEFAULT_USER:-rabbit}"
 RABBITMQ_DEFAULT_PASS="${RABBITMQ_DEFAULT_PASS:-rabbit}"
+POSTGRES_PORT="${POSTGRES_PORT:-5433}"
 
 export AIRFLOW_HOME="$PWD"
 export AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN="postgresql+psycopg2://airflow:airflow@${MASTER_IP}:5432/airflow"
+export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN="postgresql+psycopg2://airflow:airflow@${MASTER_IP}:${POSTGRES_PORT}/airflow"
 export AIRFLOW__CELERY__BROKER_URL="amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@${MASTER_IP}:5672//"
-export AIRFLOW__CELERY__RESULT_BACKEND="db+postgresql://airflow:airflow@${MASTER_IP}:5432/airflow"
+export AIRFLOW__CELERY__RESULT_BACKEND="db+postgresql://airflow:airflow@${MASTER_IP}:${POSTGRES_PORT}/airflow"
 export AIRFLOW__CORE__EXECUTION_API_SERVER_URL="http://${MASTER_IP}:8080/execution/"
 export AIRFLOW__CORE__FERNET_KEY="${AIRFLOW_FERNET_KEY}"
 export AIRFLOW__API_AUTH__JWT_SECRET="${AIRFLOW_JWT_SECRET}"
