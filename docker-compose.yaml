@@ -143,10 +143,12 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  # Worker local: el maestro también ejecuta tareas.
+  # Worker local: APAGADO por defecto, el maestro solo coordina y no ejecuta tareas.
+  # Para encenderlo:  docker compose --profile worker-local up -d
   airflow-worker:
     <<: *airflow-common
-    command: celery worker
+    profiles: ["worker-local"]
+    command: celery worker --concurrency 2
     healthcheck:
       test:
         - "CMD-SHELL"

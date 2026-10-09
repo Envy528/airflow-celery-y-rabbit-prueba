@@ -7,7 +7,7 @@ Clúster de **Apache Airflow 3.1.5** que reparte la ejecución de tareas entre v
 - **PostgreSQL** guarda la metadata de Airflow y el resultado de cada tarea.
 - **Workers**: procesos que toman tareas de la cola y las ejecutan. Pueden estar en cualquier PC que llegue al maestro.
 
-Un PC hace de **maestro** (Postgres, RabbitMQ, scheduler, API/UI, Flower y un worker propio) y los demás se suman como **workers**.
+Un PC hace de **maestro** (Postgres, RabbitMQ, scheduler, API/UI y Flower) y los demás se suman como **workers**. El maestro solo coordina: por defecto **no ejecuta tareas**, para no saturarse.
 
 > Proyecto de laboratorio/aprendizaje. No usar tal cual en producción: hay contraseñas por defecto y los puertos quedan abiertos en la red local.
 
@@ -54,7 +54,7 @@ Cada worker necesita llegar al maestro por estos puertos:
 
 ```
 .
-├── docker-compose.yaml          # MAESTRO: Postgres, RabbitMQ, Airflow, worker local y Flower
+├── docker-compose.yaml          # MAESTRO: Postgres, RabbitMQ, Airflow y Flower (worker local opcional)
 ├── docker-compose.worker.yaml   # WORKER con Docker (Windows o Linux)
 ├── iniciar_worker.ps1           # Lanza el worker con Docker en Windows
 ├── iniciar_worker.sh            # Lanza el worker en Linux SIN Docker y SIN sudo
@@ -216,7 +216,9 @@ Para PCs donde no tienes permisos de administrador. Todo se instala en tu usuari
 
 ## Verificar que todo funciona
 
-1. Abre **Flower** en el maestro (http://localhost:5555). Debe haber **un worker por máquina**, todos *Online*. El del maestro tiene como nombre el ID del contenedor; los de Docker, la `WORKER_IP`.
+1. Abre **Flower** en el maestro (http://localhost:5555). Debe haber **un worker por cada PC worker**, todos *Online*. Los de Docker se llaman como su `WORKER_IP`; los de Linux sin Docker, como el nombre del PC.
+
+   > El maestro no tiene worker propio. Si quieres que también ejecute tareas (solo si tu PC aguanta), enciéndelo con `docker compose --profile worker-local up -d`. Usa `--concurrency 2` para no saturarse.
 2. En la UI de Airflow, activa un DAG y ejecútalo con *Trigger*.
 3. En Flower, en *Tasks*, verás qué worker ejecutó cada tarea.
 
