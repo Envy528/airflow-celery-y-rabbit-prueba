@@ -16,6 +16,10 @@
 # AIRFLOW_FERNET_KEY           - Clave para cifrar conexiones. DEBE ser igual en todas las máquinas.
 # AIRFLOW_JWT_SECRET           - Secreto JWT de Airflow 3. DEBE ser igual en todas las máquinas.
 ---
+# Nombre de proyecto fijo (contenedores airflow-*), sin importar cómo se llame la carpeta.
+# limpiar.sh / limpiar.ps1 lo usan para encontrar lo que hay que borrar.
+name: airflow
+
 x-airflow-common:
   &airflow-common
   image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.5}

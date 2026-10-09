@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Worker de Airflow (CeleryExecutor) para Ubuntu SIN sudo y SIN Docker.
+# Worker de Airflow (CeleryExecutor) para Linux (Ubuntu, Mint...) SIN sudo y SIN Docker.
 # Todo se instala dentro de esta carpeta y en ~/.local/bin (uv).
 #
 # Uso:
@@ -7,6 +7,7 @@
 #   ./iniciar_worker.sh                                   # en primer plano (Ctrl+C para parar)
 #   nohup ./iniciar_worker.sh > worker.out 2>&1 &         # en segundo plano
 #   pkill -f "airflow celery worker"                      # detenerlo
+#   ./limpiar.sh                                          # deshacer todo lo que instala
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -17,7 +18,10 @@ PYTHON_VERSION=3.12
 export PATH="$HOME/.local/bin:$PATH"
 if ! command -v uv >/dev/null 2>&1; then
   echo ">> Instalando uv..."
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+  # UV_NO_MODIFY_PATH=1: no toca ~/.bashrc ni ~/.profile (el PATH se pone arriba)
+  curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
+  # Marca para que limpiar.sh sepa que uv lo instaló este script
+  touch .uv_instalado_por_script
 fi
 
 # 2. Crear entorno e instalar Airflow (solo la primera vez).

@@ -31,3 +31,10 @@ docker-compose.override.yaml
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Generados por iniciar_worker.sh (worker Linux sin Docker)
+/airflow.cfg
+/webserver_config.py
+*.generated
+worker.out
+.uv_instalado_por_script
